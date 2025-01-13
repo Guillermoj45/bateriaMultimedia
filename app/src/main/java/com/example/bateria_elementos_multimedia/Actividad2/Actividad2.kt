@@ -16,16 +16,18 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.bateria_elementos_multimedia.R
+import java.io.File
 import java.io.IOException
 
 class Actividad2 : AppCompatActivity() {
     private var reproduciendo = false
     private var grabando = false
-    private val mediaRecorder = MediaRecorder()
-    private val mediaPlayer = MediaPlayer()
+    private var mediaRecorder: MediaRecorder? = null
+    private var mediaPlayer: MediaPlayer? = null
     private lateinit var tvContador: TextView
     private val handler = Handler(Looper.getMainLooper())
     private var segundos = 0
+
     private val runnable = object : Runnable {
         override fun run() {
             segundos++
@@ -34,31 +36,45 @@ class Actividad2 : AppCompatActivity() {
         }
     }
 
+    private lateinit var audioFile: File
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_actividad2)
+
+        // Ajustar los insets del sistema
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        tvContador = findViewById<TextView>(R.id.Contador)
+
+        tvContador = findViewById(R.id.Contador)
+
+        // Crear archivo de audio
+        audioFile = File(getExternalFilesDir(null), "audio.3gp")
     }
 
     fun reproducir(view: View) {
-        val button = view.findViewById<Button>(R.id.buttRepro)
+        val button = findViewById<Button>(R.id.buttRepro)
         if (reproduciendo) {
             button.text = "Reproducir"
-            mediaPlayer.stop()
-            mediaPlayer.reset()
+            mediaPlayer?.stop()
+            mediaPlayer?.reset()
+            mediaPlayer?.release()
+            mediaPlayer = null
             reproduciendo = false
         } else {
             button.text = "Reproduciendo"
+            segundos = 0
+            handler.post(runnable)
             try {
-                mediaPlayer.setDataSource("android/media/audio.mp3")
-                mediaPlayer.prepare()
-                mediaPlayer.start()
+                mediaPlayer = MediaPlayer().apply {
+                    setDataSource(audioFile.absolutePath)
+                    prepare()
+                    start()
+                }
                 reproduciendo = true
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -67,32 +83,35 @@ class Actividad2 : AppCompatActivity() {
     }
 
     fun grabacion(view: View) {
-        val button = view.findViewById<Button>(R.id.buttGrab)
+        val button = findViewById<Button>(R.id.buttGrab)
         if (grabando) {
-            button.text = "Grabar"
-            mediaRecorder.stop()
-            mediaRecorder.reset()
-            handler.removeCallbacks(runnable)
-            grabando = false
+            detenerGrabacion(button)
         } else {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.WRITE_EXTERNAL_STORAGE), 0)
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    0
+                )
+                button.text = "Sin permisos"
             } else {
-                startRecording(button)
+                iniciarGrabacion(button)
             }
         }
     }
 
-    private fun startRecording(button: Button) {
+    private fun iniciarGrabacion(button: Button) {
         button.text = "Grabando"
         try {
-            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
-            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-            mediaRecorder.setOutputFile("android/media/audio.mp3")
-            mediaRecorder.prepare()
-            mediaRecorder.start()
+            mediaRecorder = MediaRecorder().apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+                setOutputFile(audioFile.absolutePath)
+                prepare()
+                start()
+            }
             segundos = 0
             handler.post(runnable)
             grabando = true
@@ -101,18 +120,30 @@ class Actividad2 : AppCompatActivity() {
         }
     }
 
+    private fun detenerGrabacion(button: Button) {
+        button.text = "Grabar"
+        try {
+            mediaRecorder?.stop()
+            mediaRecorder?.release()
+            mediaRecorder = null
+            handler.removeCallbacks(runnable)
+            grabando = false
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+        }
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 0 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-            val button = findViewById<Button>(R.id.buttGrab)
-            startRecording(button)
+        if (requestCode == 0 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            iniciarGrabacion(findViewById(R.id.buttGrab))
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mediaPlayer.release()
-        mediaRecorder.release()
+        mediaPlayer?.release()
+        mediaRecorder?.release()
         handler.removeCallbacks(runnable)
     }
 }
