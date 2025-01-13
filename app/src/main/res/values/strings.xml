@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Bateria_elementos_multimedia</string>
+    <string name="actividad_8">Actividad 8</string>
+    <string name="actividad_6">Actividad 6</string>
+    <string name="camara">Camara</string>
+    <string name="galeria">Galeria</string>
+    <string name="seleccione">Seleccione una imagen</string>
+
+</resources>
