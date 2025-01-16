@@ -12,9 +12,9 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
-
 
     <application
         android:allowBackup="true"
@@ -27,9 +27,11 @@
         android:theme="@style/Theme.Bateria_elementos_multimedia"
         tools:targetApi="31">
         <activity
+            android:name=".Actividad3.Actividad3"
+            android:exported="false" />
+        <activity
             android:name=".Actividad2.Actividad2"
             android:exported="false" />
-
         <activity
             android:name=".Actividad1.Actividad1"
             android:exported="false" />
