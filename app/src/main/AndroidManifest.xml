@@ -27,6 +27,9 @@
         android:theme="@style/Theme.Bateria_elementos_multimedia"
         tools:targetApi="31">
         <activity
+            android:name=".Actividad4.Actividad4"
+            android:exported="false" />
+        <activity
             android:name=".Actividad3.Actividad3"
             android:exported="false" />
         <activity

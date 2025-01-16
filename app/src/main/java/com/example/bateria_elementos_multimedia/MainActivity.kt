@@ -10,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.bateria_elementos_multimedia.Actividad1.Actividad1
 import com.example.bateria_elementos_multimedia.Actividad2.Actividad2
 import com.example.bateria_elementos_multimedia.Actividad3.Actividad3
+import com.example.bateria_elementos_multimedia.Actividad4.Actividad4
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,5 +36,10 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, Actividad3::class.java)
             startActivity(intent)
         }
+        findViewById<Button>(R.id.buttActividad4).setOnClickListener {
+            val intent = Intent(this, Actividad4::class.java)
+            startActivity(intent)
+        }
+
     }
 }
